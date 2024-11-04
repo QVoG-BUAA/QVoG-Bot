@@ -1,6 +1,6 @@
 /*
- * Copyright (C) Patpat Online 2024
- * Made with love by Tony Skywalker
+ * Copyright (C) QVoG@BUAA 2024
+ * Programmed by Tony S.
  */
 
 package cn.edu.buaa.qvog.bot.config;

@@ -1,0 +1,32 @@
+<configuration>
+    <springProfile name="dev">
+        <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d %p %c{1} [%t] %m%n</pattern>
+            </encoder>
+        </appender>
+
+        <root level="info" additivity="false">
+            <appender-ref ref="STDOUT"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="prod">
+        <property name="HOME_LOG" value="/bot/log"/>
+        <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${HOME_LOG}/qvog-bot.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+                <fileNamePattern>${HOME_LOG}/archive/qvog-bot.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+                <maxFileSize>10MB</maxFileSize>
+                <maxHistory>60</maxHistory>
+                <totalSizeCap>1GB</totalSizeCap>
+            </rollingPolicy>
+            <encoder>
+                <pattern>%d %p %c{1} [%t] %m%n</pattern>
+            </encoder>
+        </appender>
+        <root level="info">
+            <appender-ref ref="FILE-ROLLING"/>
+        </root>
+    </springProfile>
+</configuration>

@@ -20,3 +20,7 @@ springdoc:
     operations-sorter: method
     tags-sorter: alpha
     enabled: ${SWAGGER_ENABLED:true}
+qvog:
+  enabled: ${WEBHOOK_ENABLED:false}
+  working-directory: ${WORKING_DIR:./sandbox}
+  script-directory: ${SCRIPT_DIR:./scripts}
