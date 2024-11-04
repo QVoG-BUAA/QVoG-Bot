@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: QVoG-Bot
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:qvog-bot}
+  output:
+    ansi:
+      enabled: detect
+server:
+  port: 8080
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+springdoc:
+  swagger-ui:
+    operations-sorter: method
+    tags-sorter: alpha
+    enabled: ${SWAGGER_ENABLED:true}
