@@ -8,6 +8,7 @@ package cn.edu.buaa.qvog.bot.models.mappers;
 import cn.edu.buaa.qvog.bot.models.entities.WebhookRequest;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface WebhookRequestMapper {
@@ -21,4 +22,7 @@ public interface WebhookRequestMapper {
             )
             """)
     void insert(WebhookRequest request);
+
+    @Select("SELECT * FROM `requests` WHERE `id` = #{id}")
+    WebhookRequest find(String id);
 }

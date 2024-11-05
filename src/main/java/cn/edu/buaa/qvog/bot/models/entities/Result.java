@@ -17,5 +17,6 @@ public class Result extends HasCreated {
     private String message;
     private int bugCount;
     private int queryCount;
+    private String language;
     private String data;
 }

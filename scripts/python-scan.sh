@@ -19,7 +19,7 @@ cd "$OLD" || exit
 # Run query
 OLD=$PWD
 cd "$ENGINE_PATH" || exit
-java -jar QVoGine.jar --language python --style json-compact --output "$RESULT_PATH" 2>/bot/log/Scan.log
+java -jar QVoGine.jar --language python --style json-compact --format json-compact --output "$RESULT_PATH" 2>/bot/log/Scan.log
 if [ $? -ne 0 ]; then
     echo "Failed to run query."
     exit 2

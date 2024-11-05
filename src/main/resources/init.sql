@@ -22,12 +22,13 @@ CREATE TABLE `requests`
 DROP TABLE IF EXISTS `results`;
 CREATE TABLE `results`
 (
-    `id`          CHAR(16)  NOT NULL,
-    `success`     BOOL      NOT NULL,
-    `message`     TEXT      NOT NULL,
-    `bug_count`   INT       NOT NULL,
-    `query_count` INT       NOT NULL,
-    `data`        TEXT      NOT NULL,
-    `created_at`  TIMESTAMP NOT NULL,
+    `id`          CHAR(16)    NOT NULL,
+    `success`     BOOL        NOT NULL,
+    `message`     TEXT        NOT NULL,
+    `bug_count`   INT         NOT NULL,
+    `query_count` INT         NOT NULL,
+    `language`    VARCHAR(31) NOT NULL,
+    `data`        TEXT        NOT NULL,
+    `created_at`  TIMESTAMP   NOT NULL,
     PRIMARY KEY (`id`)
 );

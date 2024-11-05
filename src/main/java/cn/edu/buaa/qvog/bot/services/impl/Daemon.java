@@ -11,7 +11,10 @@ import cn.edu.buaa.qvog.bot.common.utils.Utils;
 import cn.edu.buaa.qvog.bot.common.utils.process.IProcessDescriptor;
 import cn.edu.buaa.qvog.bot.common.utils.process.ProcessDescriptor;
 import cn.edu.buaa.qvog.bot.config.Options;
-import cn.edu.buaa.qvog.bot.dto.ResultEntry;
+import cn.edu.buaa.qvog.bot.dto.scan.BugTable;
+import cn.edu.buaa.qvog.bot.dto.scan.QueryResultDto;
+import cn.edu.buaa.qvog.bot.dto.scan.ResultLineDto;
+import cn.edu.buaa.qvog.bot.dto.scan.ScanResultDto;
 import cn.edu.buaa.qvog.bot.extensions.Mappers;
 import cn.edu.buaa.qvog.bot.models.entities.Result;
 import cn.edu.buaa.qvog.bot.models.entities.WebhookRequest;
@@ -24,8 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -81,6 +82,7 @@ public class Daemon implements Runnable {
             result.setMessage("Internal error");
             log.error("Scan failed: {}", e.getMessage(), e);
         }
+        result.setLanguage(context.getLanguage().toString().toLowerCase());
 
         resultMapper.insert(result);
         log.info("Result added");
@@ -230,15 +232,12 @@ public class Daemon implements Runnable {
             throw new ScanException("Result not found: " + context.getOutputPath());
         }
 
-        ScanResult scanResult = new ScanResult();
+        ScanResultDto scanResult = new ScanResultDto();
         try {
             var data = Files.readAllLines(Path.of(context.getOutputPath()));
             for (var line : data) {
                 if (line.startsWith("{")) {
-                    var entry = mappers.fromJson(line, ResultEntry.class);
-                    scanResult.results.add(entry);
-                    scanResult.bugCount += entry.getRows().size();
-                    scanResult.queryCount++;
+                    scanResult.addResult(parseResultLine(line));
                 }
             }
         } catch (IOException e) {
@@ -260,6 +259,18 @@ public class Daemon implements Runnable {
         return result;
     }
 
+    private QueryResultDto parseResultLine(String line) throws JsonProcessingException {
+
+        QueryResultDto queryResultDto = new QueryResultDto();
+        ResultLineDto resultLine = mappers.fromJson(line, ResultLineDto.class);
+
+        queryResultDto.setName(resultLine.name);
+        queryResultDto.setResult(mappers.fromJson(resultLine.result, BugTable.class));
+        queryResultDto.setMilliseconds(resultLine.milliseconds);
+
+        return queryResultDto;
+    }
+
     private enum SupportedLanguages {
         UNKNOWN, PYTHON, C
     }
@@ -271,12 +282,5 @@ public class Daemon implements Runnable {
         private String repoPath;    // the full path of the repository
         private SupportedLanguages language;
         private String outputPath;
-    }
-
-    @Data
-    private static class ScanResult {
-        private List<ResultEntry> results = new ArrayList<>();
-        private int bugCount;
-        private int queryCount;
     }
 }
