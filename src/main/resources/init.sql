@@ -30,4 +30,4 @@ CREATE TABLE `results`
     `data`        TEXT      NOT NULL,
     `created_at`  TIMESTAMP NOT NULL,
     PRIMARY KEY (`id`)
-)
+);

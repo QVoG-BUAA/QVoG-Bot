@@ -12,6 +12,7 @@ import cn.edu.buaa.qvog.bot.extensions.Mappers;
 import cn.edu.buaa.qvog.bot.models.entities.WebhookRequest;
 import cn.edu.buaa.qvog.bot.services.WebhookService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class WebhookController {
     private final WebhookService webhookService;
 
     @PostMapping("webhook")
+    @Operation(summary = "Receive GitLink webhook payload")
     public MessageResponse webhook(@RequestBody @Valid WebhookPayload payload) {
         log.info("Received webhook payload: {}", payload);
         WebhookRequest request = convertPayload(payload);

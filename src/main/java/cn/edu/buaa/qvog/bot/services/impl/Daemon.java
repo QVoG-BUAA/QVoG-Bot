@@ -11,10 +11,12 @@ import cn.edu.buaa.qvog.bot.common.utils.Utils;
 import cn.edu.buaa.qvog.bot.common.utils.process.IProcessDescriptor;
 import cn.edu.buaa.qvog.bot.common.utils.process.ProcessDescriptor;
 import cn.edu.buaa.qvog.bot.config.Options;
+import cn.edu.buaa.qvog.bot.dto.ResultEntry;
 import cn.edu.buaa.qvog.bot.extensions.Mappers;
 import cn.edu.buaa.qvog.bot.models.entities.Result;
 import cn.edu.buaa.qvog.bot.models.entities.WebhookRequest;
 import cn.edu.buaa.qvog.bot.models.mappers.ResultMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,11 +24,18 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
 @Slf4j
 public class Daemon implements Runnable {
+    private static final Map<SupportedLanguages, String> SCRIPTS = Map.of(
+            SupportedLanguages.PYTHON, "python-scan.sh",
+            SupportedLanguages.C, "c-scan.sh"
+    );
+
     private final TaskQueue queue;
     private final Options options;
     private final Mappers mappers;
@@ -42,6 +51,9 @@ public class Daemon implements Runnable {
                 scan(task);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                log.error("Daemon interrupted");
+            } catch (Exception e) {
+                log.error("Unexpected exception in daemon", e);
             }
         }
     }
@@ -62,9 +74,16 @@ public class Daemon implements Runnable {
             result.setSuccess(false);
             result.setMessage(e.getMessage());
             log.error("Scan failed: {}", e.getMessage(), e);
+        } catch (Exception e) {
+            result = new Result();
+            result.setId(request.getId());
+            result.setSuccess(false);
+            result.setMessage("Internal error");
+            log.error("Scan failed: {}", e.getMessage(), e);
         }
 
         resultMapper.insert(result);
+        log.info("Result added");
 
         log.info("Sending email");
     }
@@ -103,7 +122,7 @@ public class Daemon implements Runnable {
         try {
             exitValue = ProcessDescriptor.create()
                     .setWorkingDirectory(options.getWorkingDirectory())
-                    .exec("git", "clone", context.getRequest().getCloneUrl(), context.getRepoName())
+                    .exec("git", "clone", context.getRequest().getCloneUrl())
                     .redirectError(error)
                     .waitFor();
         } catch (IOException e) {
@@ -180,12 +199,16 @@ public class Daemon implements Runnable {
         int exitValue;
         IProcessDescriptor.ProcessError error = new IProcessDescriptor.ProcessError();
         try {
+            String script = SCRIPTS.get(context.getLanguage());
+            if (script == null) {
+                throw new ScanException("Unsupported language: " + context.getLanguage());
+            }
             exitValue = ProcessDescriptor.create()
-                    .setWorkingDirectory(options.getWorkingDirectory())
                     .exec("bash",
-                            Path.of(options.getScriptDirectory(), "python-scan.sh").toString(),
+                            Path.of(options.getScriptDirectory(), script).toString(),
                             context.getRepoPath(),
                             context.getOutputPath())
+                    .redirectError(error)
                     .waitFor();
         } catch (IOException e) {
             throw new ScanException("Failed to perform scan", e);
@@ -207,12 +230,17 @@ public class Daemon implements Runnable {
             throw new ScanException("Result not found: " + context.getOutputPath());
         }
 
-
-        String data;
-        ScanResult scanResult;
+        ScanResult scanResult = new ScanResult();
         try {
-            data = Files.readString(Path.of(context.getOutputPath()));
-            scanResult = mappers.fromJson(data, ScanResult.class);
+            var data = Files.readAllLines(Path.of(context.getOutputPath()));
+            for (var line : data) {
+                if (line.startsWith("{")) {
+                    var entry = mappers.fromJson(line, ResultEntry.class);
+                    scanResult.results.add(entry);
+                    scanResult.bugCount += entry.getRows().size();
+                    scanResult.queryCount++;
+                }
+            }
         } catch (IOException e) {
             throw new ScanException("Failed to read result", e);
         }
@@ -223,7 +251,11 @@ public class Daemon implements Runnable {
         result.setMessage("OK");
         result.setBugCount(scanResult.getBugCount());
         result.setQueryCount(scanResult.getQueryCount());
-        result.setData(data);
+        try {
+            result.setData(mappers.toJson(scanResult));
+        } catch (JsonProcessingException e) {
+            throw new ScanException("Failed to serialize scan result", e);
+        }
 
         return result;
     }
@@ -243,8 +275,7 @@ public class Daemon implements Runnable {
 
     @Data
     private static class ScanResult {
-        private Object results;
-        private int totalTime;
+        private List<ResultEntry> results = new ArrayList<>();
         private int bugCount;
         private int queryCount;
     }
