@@ -1,0 +1,47 @@
+.NavBar {
+    height: 50px;
+    width: 95%;
+    margin: 0 auto;
+    line-height: 50px;
+    padding: 10px;
+}
+
+.NavBar__logo {
+    height: 100%;
+    margin-right: 10px;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.NavBar__logo img {
+    height: 100%;
+    margin: 0 10px;
+    vertical-align: middle;
+    animation: rotation 10s linear infinite;
+}
+
+.NavBar__logo h3 {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0;
+}
+
+.NavBar__right {
+    float: right;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.NavBar__right span {
+    display: inline-block;
+}
+
+.NavBar__right i {
+    display: inline-block;
+    height: 100%;
+    width: 2px;
+    margin: 0 10px;
+    background: linear-gradient(to top, transparent, rgba(255, 255, 255, 0.5), transparent);
+}

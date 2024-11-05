@@ -1,0 +1,34 @@
+.ResultTable h3 {
+    display: inline;
+    margin-right: 10px;
+}
+
+.ResultTable__title hr {
+    width: 40%;
+    /* background: linear-gradient(to right, #dfdfdf, transparent); */
+    background: linear-gradient(to right, #333, transparent);
+}
+
+.ResultTable__table {
+    margin: 20px auto;
+    font-family: monospace;
+}
+
+.ResultTable__table table {
+    width: 100%;
+    border-collapse: collapse;
+    /* border: 1px solid #dfdfdf; */
+    border: 1px solid #333;
+}
+
+.ResultTable__table th {
+    /* border: 1px solid #dfdfdf; */
+    border: 1px solid #333;
+    padding: 3px 0;
+}
+
+.ResultTable__table td {
+    /* border: 1px solid #dfdfdf; */
+    border: 1px solid #333;
+    padding: 3px;
+}
