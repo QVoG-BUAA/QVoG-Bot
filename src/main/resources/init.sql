@@ -28,7 +28,7 @@ CREATE TABLE `results`
     `bug_count`   INT         NOT NULL,
     `query_count` INT         NOT NULL,
     `language`    VARCHAR(31) NOT NULL,
-    `data`        TEXT        NOT NULL,
+    `data`        TEXT        NULL,
     `created_at`  TIMESTAMP   NOT NULL,
     PRIMARY KEY (`id`)
 );

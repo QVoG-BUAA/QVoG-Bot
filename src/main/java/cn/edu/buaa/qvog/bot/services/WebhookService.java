@@ -5,7 +5,9 @@
 
 package cn.edu.buaa.qvog.bot.services;
 
+import cn.edu.buaa.qvog.bot.config.EmailOptions;
 import cn.edu.buaa.qvog.bot.config.Options;
+import cn.edu.buaa.qvog.bot.extensions.EmailClient;
 import cn.edu.buaa.qvog.bot.extensions.Mappers;
 import cn.edu.buaa.qvog.bot.models.entities.WebhookRequest;
 import cn.edu.buaa.qvog.bot.models.mappers.ResultMapper;
@@ -29,6 +31,8 @@ public class WebhookService {
     private final Options options;
     private final Mappers mappers;
     private final ResultMapper resultMapper;
+    private final EmailClient emailClient;
+    private final EmailOptions emailOptions;
 
 
     private boolean started;
@@ -37,11 +41,12 @@ public class WebhookService {
         startIfNotStarted();
         webhookRequestMapper.insert(request);
         queue.offer(request);
+        log.info("Request sent");
     }
 
     private synchronized void startIfNotStarted() {
         if (!started) {
-            EXECUTOR_SERVICE.submit(new Daemon(queue, options, mappers, resultMapper));
+            EXECUTOR_SERVICE.submit(new Daemon(queue, options, mappers, resultMapper, emailClient, emailOptions));
             started = true;
         }
     }

@@ -14,7 +14,7 @@ export default function HomeFrame({ children }) {
     return (
         <div className='HomeFrame'>
             <Helmet>
-                <title>CodeGraphQL.Bot</title>
+                <title>QVoG.Bot</title>
             </Helmet>
             <InflateBox minimum="512">
                 <div className='HomeFrame__wrapper'>
@@ -26,7 +26,7 @@ export default function HomeFrame({ children }) {
                     <div className='HomeFrame__content_wrapper'>
                         {/* Title */}
                         <div className='HomeFrame__title_wrapper'>
-                            <h1>CodeGraphQL.Bot</h1>
+                            <h1>QVoG.Bot</h1>
                         </div>
                         {/* Description */}
                         <div className='HomeFrame__description_wrapper'>

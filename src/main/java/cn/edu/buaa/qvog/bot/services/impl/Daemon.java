@@ -10,11 +10,13 @@ import cn.edu.buaa.qvog.bot.common.utils.Strings;
 import cn.edu.buaa.qvog.bot.common.utils.Utils;
 import cn.edu.buaa.qvog.bot.common.utils.process.IProcessDescriptor;
 import cn.edu.buaa.qvog.bot.common.utils.process.ProcessDescriptor;
+import cn.edu.buaa.qvog.bot.config.EmailOptions;
 import cn.edu.buaa.qvog.bot.config.Options;
 import cn.edu.buaa.qvog.bot.dto.scan.BugTable;
 import cn.edu.buaa.qvog.bot.dto.scan.QueryResultDto;
 import cn.edu.buaa.qvog.bot.dto.scan.ResultLineDto;
 import cn.edu.buaa.qvog.bot.dto.scan.ScanResultDto;
+import cn.edu.buaa.qvog.bot.extensions.EmailClient;
 import cn.edu.buaa.qvog.bot.extensions.Mappers;
 import cn.edu.buaa.qvog.bot.models.entities.Result;
 import cn.edu.buaa.qvog.bot.models.entities.WebhookRequest;
@@ -41,6 +43,8 @@ public class Daemon implements Runnable {
     private final Options options;
     private final Mappers mappers;
     private final ResultMapper resultMapper;
+    private final EmailClient emailClient;
+    private final EmailOptions emailOptions;
     private Context context;
 
     @Override
@@ -66,15 +70,18 @@ public class Daemon implements Runnable {
             return;
         }
 
+        boolean success = false;
         Result result;
         try {
             result = scanImpl(request);
+            success = true;
         } catch (ScanException e) {
             result = new Result();
             result.setId(request.getId());
             result.setSuccess(false);
             result.setMessage(e.getMessage());
             log.error("Scan failed: {}", e.getMessage(), e);
+
         } catch (Exception e) {
             result = new Result();
             result.setId(request.getId());
@@ -88,6 +95,21 @@ public class Daemon implements Runnable {
         log.info("Result added");
 
         log.info("Sending email");
+        if (success) {
+            emailClient.sendSuccess(
+                    request.getAuthorEmail(),
+                    request.getAuthor(),
+                    request.getCloneUrl(),
+                    request.getRepoName(),
+                    emailOptions.getBaseUrl() + "/results/" + request.getId());
+        } else {
+            emailClient.sendFailed(
+                    request.getAuthorEmail(),
+                    request.getAuthor(),
+                    request.getCloneUrl(),
+                    request.getRepoName());
+        }
+        log.info("Email sent");
     }
 
     private Result scanImpl(WebhookRequest request) throws ScanException {

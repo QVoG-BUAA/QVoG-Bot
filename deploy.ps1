@@ -22,11 +22,19 @@
 # 3. Run this script under project root directory.
 #
 
-# Pack target/*.jar and Dockerfile into tar.gz
-Write-Host "Packing target/*.jar and scripts/* into tar.gz"
+$tempDir = -join ((65..90) + (97..122) | Get-Random -Count 10 | % { [char]$_ })
+mkdir $tempDir
+
+Write-Host "Copying target/*.jar, scripts/*, templates/* and frontend/dist to temp directory"
+Copy-Item target/*.jar $tempDir
+Copy-Item assets/scripts $tempDir -Recurse
+Copy-Item assets/templates $tempDir -Recurse
+Copy-Item frontend/dist $tempDir -Recurse
+
+Write-Host "Packaging files to archive"
 $randomString = -join ((65..90) + (97..122) | Get-Random -Count 10 | % { [char]$_ })
 $archiveName = "$randomString.tar.gz"
-tar -czf $archiveName target/*.jar scripts/*
+tar -czf $archiveName $tempDir
 
 # Read first and second line from .env file and raise error if not found
 $envFile = Get-Content .env
@@ -45,12 +53,13 @@ scp $archiveName ${hostConnection}:/tmp/$archiveName
 # Execute remote commands:
 Write-Host "Executing deploy commands"
 $commands = @(
-    "tar -xzf /tmp/$archiveName -C $deployPath --overwrite",
-    " && rm /tmp/$archiveName;"
-    "cd $deployPath && bash update.sh"
+    "tar -xzf /tmp/$archiveName -C $deployPath --overwrite;",
+    "rm /tmp/$archiveName;"
+    "cd $deployPath && bash $tempDir/update.sh $tempDir && rm -rf $tempDir"
 )
 ssh $hostConnection $commands
 
 # Delete archive
 Write-Host "Finishing up"
+Remove-Item $tempDir -Recurse
 Remove-Item $archiveName

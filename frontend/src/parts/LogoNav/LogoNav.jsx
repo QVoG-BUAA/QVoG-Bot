@@ -24,7 +24,7 @@ export default function LogoNav({ data = null, online = false }) {
         <div className='NavBar'>
             <div className='NavBar__logo' onClick={handleClick}>
                 <Logo online={online} fast={true} />
-                <h3>CodeGraphQL.Bot</h3>
+                <h3>QVoG.Bot</h3>
             </div>
             {data == null ? null :
                 <div className='NavBar__right'>

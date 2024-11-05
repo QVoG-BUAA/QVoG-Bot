@@ -24,3 +24,8 @@ qvog:
   enabled: ${WEBHOOK_ENABLED:false}
   working-directory: ${WORKING_DIR:./sandbox}
   script-directory: ${SCRIPT_DIR:./scripts}
+email:
+  template-directory: ${TEMPLATE_DIR:./email-templates}
+  from: ${EMAIL_FROM}
+  key: ${MAILTRAP_API_KEY}
+  base-url: ${BASE_URL}
